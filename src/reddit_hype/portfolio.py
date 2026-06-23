@@ -26,6 +26,8 @@ def apply_universe_filters(
     df = day_df.copy()
     if "dollar_volume_20d" in df:
         df = df[df["dollar_volume_20d"].fillna(0) >= float(t.get("min_dollar_volume", 0))]
+    if df.empty:
+        return df  # preserve columns; later filters on an empty frame can drop them
     if "market_cap" in df:
         # Only drop on market cap when it is KNOWN and below the floor — keyless
         # (SEC) universes have NaN market cap and shouldn't be filtered to nothing.
@@ -43,6 +45,10 @@ def apply_universe_filters(
 
 # --------------------------------------------------------------- strategies
 def _top(df: pd.DataFrame, col: str, n: int) -> pd.DataFrame:
+    if df.empty or col not in df.columns:   # e.g. a date with no eligible names
+        out = df.copy()
+        out["rank_score"] = pd.Series(dtype="float64")
+        return out.head(0)
     d = df.dropna(subset=[col]).copy()
     d["rank_score"] = d[col]
     return d.nlargest(n, "rank_score")

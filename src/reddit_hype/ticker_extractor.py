@@ -83,6 +83,10 @@ class TickerExtractor:
         self.weights = f.get("confidence_weights", {})
         self.min_confidence = float(f.get("min_confidence", 0.55))
         self.asx_suffix = f.get("asx_suffix", ".AX")
+        # Bare tokens shorter than this require a cashtag/alias. Single capital
+        # letters (P from "P/E", S from "S&P", C, E, ...) are valid 1-letter NYSE
+        # tickers but overwhelmingly noise in prose, so we don't accept them bare.
+        self.min_bare_len = int(f.get("min_bare_token_len", 2))
         # Pre-sort alias phrases longest-first so multi-word names win.
         self._alias_phrases = sorted(self.aliases.keys(), key=len, reverse=True)
 
@@ -220,6 +224,8 @@ class TickerExtractor:
                 continue
             base = token.split(".")[0]
             if base in self.blocklist:
+                continue
+            if len(base) < self.min_bare_len:  # single letters need a cashtag/alias
                 continue
             ticker = self._normalize_ticker(token)
             # company name present anywhere -> nearby bonus

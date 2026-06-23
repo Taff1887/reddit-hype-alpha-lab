@@ -61,6 +61,18 @@ def test_confidence_cashtag_ge_bare(extractor):
     assert cash["NVDA"] >= bare["NVDA"]
 
 
+def test_single_letter_bare_token_rejected(extractor):
+    # "C" (Citigroup), "P" (from P/E), "S" (from S&P) are valid 1-letter tickers
+    # but must NOT be extracted from bare prose — only as cashtags.
+    assert "C" not in tickers(extractor, "Citigroup C looks cheap, buying shares")
+    assert "P" not in tickers(extractor, "the P/E ratio and S&P 500 both matter for stocks")
+    assert "S" not in tickers(extractor, "the S&P 500 is making new highs, calls")
+
+
+def test_single_letter_cashtag_still_works(extractor):
+    assert "C" in tickers(extractor, "$C earnings beat, buying calls")
+
+
 def test_confidence_in_unit_interval(extractor):
     for m in extractor.extract("$NVDA $AMD calls, bought CCJ shares, Bloom Energy DD"):
         assert 0.0 <= m.confidence <= 1.0

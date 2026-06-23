@@ -89,6 +89,11 @@ require_cashtag:
 # Minimum confidence (0-1) for a mention to be kept.
 min_confidence: 0.55
 
+# Bare (non-cashtag) tokens shorter than this are ignored. Single capital letters
+# are valid 1-letter NYSE tickers (C, F, T, V...) but in prose are overwhelmingly
+# noise ("P/E", "S&P", "Q3", bullet "B)"), so they only count as $C cashtags.
+min_bare_token_len: 2
+
 # Confidence scoring weights (see ticker_extractor._score). Tuned so that:
 #   * a cashtag ($NVDA) essentially always clears the threshold,
 #   * a bare valid ticker WITH finance context clears (0.40 + 0.20 = 0.60),

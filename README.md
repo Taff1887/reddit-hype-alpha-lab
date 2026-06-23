@@ -238,6 +238,42 @@ built to test them:
   (`wallstreetbets_submissions.zst`), or arctic_shift mirrors. See
   `data/raw/reddit/dumps/README.md`.
 
+## Findings on real data (keyless: arctic_shift + SEC + Yahoo)
+
+Run across multiple independent windows (2022 bear, 2023, 2024) on 4 US equity
+subreddits. All returns are market-adjusted, net of costs where stated, with
+HAC (Newey-West) t-stats and liquidity stratification.
+
+1. **The naive "attention pop" is a liquidity artifact.** A raw +1.25% next-day
+   pop after attention spikes (autumn 2023) **vanished** once restricted to liquid
+   names (>$10M/day: HAC t≈−1.4). It was penny-stock microstructure, not return.
+
+2. **"Fade the acceleration" replicates (the one robust effect).** In liquid
+   names, the top quartile by *attention acceleration* had **negative** next-day
+   market-adjusted returns in **4/4 windows** (HAC t up to −2.8). Chasing the
+   loudest, fastest-rising Reddit hype is a consistent small *loser*.
+
+3. **Trading the 100 most talked-about stocks doesn't work** (Jan–Jun 2024,
+   equal-weight, net of costs):
+
+   | Universe | 5-day hold | 20-day hold |
+   |---|---|---|
+   | All names | Sharpe −3.8 (−52%/yr) | Sharpe +0.2 |
+   | Liquid >$10M/day | Sharpe −5.0 | Sharpe +0.6 (+6.6%, **below buy-and-hold SPY**) |
+
+   Short rebalancing is destroyed by turnover/costs; the least-bad version barely
+   matches the index in a bull market. Not alpha.
+
+4. **Data mining is a mirage — demonstrated, not hidden.** Sweeping 24 mention
+   strategies, the best **in-sample** Sharpe was **1.07**; re-run **out-of-sample**,
+   all top winners collapsed to **−0.71**. *Nothing survived.* This is exactly why
+   the lab splits in-sample/out-of-sample and reports the gap.
+
+**Bottom line:** no robust, tradable alpha in raw or most-talked Reddit attention
+among liquid names over these windows. The only effect that replicates is that
+*chasing* acceleration loses slightly. That is a real, defensible conclusion —
+and the kind this lab is built to reach honestly rather than curve-fit around.
+
 ## We do **not** claim alpha unless it
 survives transaction costs **and** realistic execution, is not driven by one meme
 event, works out-of-sample across multiple periods, is liquid enough to trade, and
