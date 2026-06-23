@@ -1,0 +1,81 @@
+# ---------------------------------------------------------------------------
+# Curated alias -> ticker map. Used by the ticker extractor to catch company
+# names, common nicknames, and known misspellings that won't match the raw
+# symbol. Keys are matched case-insensitively as whole phrases.
+#
+# Keep this curated and small — it is high-precision by design. The FMP company
+# name list provides broad coverage; this file handles the tricky retail slang.
+# ---------------------------------------------------------------------------
+
+aliases:
+  # AI infrastructure
+  "nebius": NBIS
+  "bloom energy": BE
+  "c3.ai": AI
+  "c3 ai": AI
+  "super micro": SMCI
+  "supermicro": SMCI
+  "smci": SMCI
+  "nvidia": NVDA
+  "nvda": NVDA
+  "palantir": PLTR
+  "vertiv": VRT
+  "coreweave": CRWV
+  "arm holdings": ARM
+  "broadcom": AVGO
+  "amd": AMD
+  "advanced micro devices": AMD
+
+  # Uranium / nuclear / mining
+  "cameco": CCJ
+  "oklo": OKLO
+  "centrus": LEU
+  "nuscale": SMR
+  "uranium energy": UEC
+  "denison": DNN
+  "energy fuels": UUUU
+  "paladin energy": "PDN.AX"
+  "boss energy": "BOE.AX"
+  "deep yellow": "DYL.AX"
+
+  # Battery metals / lithium
+  "albemarle": ALB
+  "lithium americas": LAC
+  "pilbara minerals": "PLS.AX"
+  "liontown": "LTR.AX"
+  "iris energy": IREN
+
+  # Bitcoin miners / crypto
+  "marathon digital": MARA
+  "mara holdings": MARA
+  "riot platforms": RIOT
+  "cleanspark": CLSK
+  "core scientific": CORZ
+  "microstrategy": MSTR
+  "strategy": MSTR
+  "coinbase": COIN
+
+  # High retail-interest / squeeze names
+  "gamestop": GME
+  "amc": AMC
+  "robinhood": HOOD
+  "rocket lab": RKLB
+  "lucid": LCID
+  "rivian": RIVN
+
+  # ASX large/popular
+  "fortescue": "FMG.AX"
+  "bhp": "BHP.AX"
+  "rio tinto": "RIO.AX"
+  "commonwealth bank": "CBA.AX"
+  "wisetech": "WTC.AX"
+  "zip co": "ZIP.AX"
+  "zip": "ZIP.AX"
+
+# Known misspellings -> canonical alias key above (or direct ticker).
+misspellings:
+  "nvidea": NVDA
+  "nvdia": NVDA
+  "palantier": PLTR
+  "gamestonk": GME
+  "microstrat": MSTR

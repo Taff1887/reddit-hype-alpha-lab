@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+.ipynb_checkpoints/
+
+# Environment / secrets
+.env
+.env.local
+*.key
+
+# Data — never commit raw pulls or API caches (may contain user content / be large).
+# Keep the directory skeleton (.gitkeep) and the small curated manual/ inputs.
+data/raw/**
+data/interim/**
+data/processed/**
+# re-include directories so the skeleton survives a clone, then the keepers:
+!data/**/
+!data/**/.gitkeep
+!data/manual/**
+
+# Reports — generated artifacts (keep the directory skeleton only)
+reports/figures/**
+reports/tables/**
+reports/scorecards/**
+reports/daily_watchlists/**
+!reports/**/
+!reports/**/.gitkeep
+
+# One-off / scratch drivers (not part of the public API)
+scripts/_big_study.py
+/tmp/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml

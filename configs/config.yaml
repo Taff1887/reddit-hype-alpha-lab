@@ -1,0 +1,58 @@
+# ---------------------------------------------------------------------------
+# Global configuration for reddit-hype-alpha-lab.
+# Paths are relative to the repository root unless absolute.
+# ---------------------------------------------------------------------------
+
+# Run mode:
+#   auto  -> use live APIs if credentials exist, else fall back to mock
+#   live  -> require credentials, error if missing
+#   mock  -> always use synthetic development data (never use for research claims)
+mode: auto
+
+# Universe / data window
+timezone: "America/New_York"        # market clock used for the no-lookahead rule
+data_start: "2023-01-01"            # earliest date to keep for research panels
+lookback_days_fetch: 30             # how far back fetch_reddit pulls each run
+
+paths:
+  raw_reddit: data/raw/reddit
+  raw_prices: data/raw/prices
+  raw_fundamentals: data/raw/fundamentals
+  interim: data/interim
+  processed: data/processed
+  manual: data/manual
+  reports: reports
+  watchlists: reports/daily_watchlists
+  figures: reports/figures
+  tables: reports/tables
+  scorecards: reports/scorecards
+
+files:
+  ticker_universe: data/processed/ticker_universe.parquet
+  mentions: data/interim/mentions.parquet
+  reddit_items: data/raw/reddit/reddit_items.parquet
+  prices: data/raw/prices/prices.parquet
+  features: data/processed/features.parquet
+  labels: data/processed/labels.parquet
+  panel: data/processed/panel.parquet            # features + labels joined
+
+reddit:
+  # Per-subreddit fetch caps (respect rate limits — keep these modest).
+  posts_per_subreddit: 200
+  comments_per_post: 100
+  listing: "new"                                  # new | hot | top
+  request_sleep_seconds: 1.0
+
+fmp:
+  base_url: "https://financialmodelingprep.com/api/v3"
+  # Universe filters applied when building the tradable universe.
+  exchanges: ["NASDAQ", "NYSE", "AMEX", "ASX"]
+  min_market_cap: 50_000_000          # USD; very small floor, refined per-strategy
+  request_sleep_seconds: 0.25
+  cache_days: 1                       # reuse cached pulls newer than this
+
+# Mock-mode determinism (development only).
+mock:
+  seed: 1887
+  n_days: 180
+  n_tickers: 40

@@ -1,0 +1,133 @@
+# ---------------------------------------------------------------------------
+# Strategy, scoring, portfolio and cost parameters. Everything here is meant to
+# be swept/overridden by the research loop. No magic numbers in code.
+# ---------------------------------------------------------------------------
+
+# --- Core composite score weights (models.final_hype_alpha_score) -----------
+# These map directly onto the seven component scores. Positive weights reward,
+# negative weights penalise. They do NOT need to sum to 1 (the score is a
+# weighted sum of standardised components).
+score_weights:
+  attention_zscore:        0.20   # abnormal attention vs 30d baseline (clipped z)
+  hype_velocity_score:     0.20   # acceleration vs 7d (tanh, -1..1)
+  net_bullish_sentiment:   0.15   # -1..1
+  conviction_language:     0.15   # stated-position language (tanh, -1..1)
+  breadth_score:           0.10   # normalised cross-subreddit breadth (tanh, -1..1)
+  underreaction_score:     0.10   # 0..1
+  quality_dd_score:        0.10   # 0..1
+  pump_risk_score:        -0.20   # penalty, 0..1
+  already_ran_penalty:    -0.10   # penalty, 0..1
+
+# --- Component score parameters --------------------------------------------
+scoring:
+  attention_baseline_days: 30        # trailing window for abnormal-attention z-scores
+  velocity_short_window: 1           # "today" window in days
+  velocity_long_window: 7            # baseline window in days
+  spike_zscore_threshold: 2.0        # mentions z-score that flags a "sudden spike"
+  underreaction_return_cap: 0.05     # |5d return| below this = "price hasn't moved"
+  already_ran_return_threshold: 0.15 # 5d return above this = "already ran"
+  min_unique_authors: 3              # below this, attention is one-person noise
+
+# --- Labels / forward returns ----------------------------------------------
+labels:
+  horizons: [1, 3, 5, 10, 20]        # trading-day forward horizons
+  execution: next_open               # next_open | next_close
+  market_benchmark: "SPY"            # for market-adjusted returns (mock: synthetic index)
+  primary_horizon: 5                 # default horizon used for ranking/ML target
+
+# --- Tradability / universe filters ----------------------------------------
+tradability:
+  min_dollar_volume: 1_000_000       # 20d median $ volume floor
+  min_market_cap: 100_000_000
+  max_market_cap: null               # null = no upper bound (set for small-cap strategies)
+  exclude_otc: true
+  exclude_penny: true                # exclude price < penny_price unless overridden
+  penny_price: 1.0
+  liquidity_buckets: [1_000_000, 10_000_000, 100_000_000]  # $ volume bucket edges
+
+# --- Portfolio construction -------------------------------------------------
+portfolio:
+  top_n: 10
+  weighting: score                   # equal | score | vol_scaled | liquidity_adjusted
+  max_weight: 0.20                   # cap per name
+  rebalance: daily                   # daily | weekly
+  holding_days: 5
+  max_turnover: 1.0                  # fraction of book turned over per rebalance (cap)
+  target_vol: null                   # annualised; null = no vol targeting
+  long_only: true
+
+# --- Transaction costs / execution -----------------------------------------
+costs:
+  commission_bps: 1.0                # per-side, basis points of notional
+  spread_bps: 10.0                   # half-spread proxy paid on entry and exit
+  slippage_bps: 5.0                  # market-impact proxy
+  borrow_bps_annual: 300.0           # for any (research-only) short legs
+  max_participation: 0.10            # cap fill at 10% of a name's daily $ volume
+
+# --- Strategies (toggle + per-strategy overrides) ---------------------------
+strategies:
+  TopHypeLongOnly:
+    enabled: true
+    rank_by: final_hype_alpha_score
+    top_n: 10
+    holding_days: [1, 3, 5, 10, 20]
+  TopMentioned:
+    enabled: true                    # "trade the N most talked-about stocks"
+    rank_by: total_mentions          # or mentions_7d / unique_authors / weighted_attention
+    top_n: 100
+    weighting: equal
+    holding_days: [5, 20]
+  HypeAcceleration:
+    enabled: true
+    require_spike: true
+    max_prior_5d_return: 0.05
+  ConvictionOnly:
+    enabled: true
+    min_conviction: 0.5
+    min_unique_authors: 5
+  QualityDDOnly:
+    enabled: true
+    min_quality_dd: 0.6
+    max_post_count: 20
+  UnderreactedHype:
+    enabled: true
+    min_attention_zscore: 1.5
+    max_abs_5d_return: 0.05
+  HypeExhaustionFade:
+    enabled: false                   # research-only; shorting not assumed realistic
+    min_attention_zscore: 3.0
+  SmallCapHype:
+    enabled: true
+    min_market_cap: 150_000_000
+    max_market_cap: 5_000_000_000
+  SectorHypeRotation:
+    enabled: true
+    sector_top_k: 3
+  CrossSubredditBreakout:
+    enabled: true
+    min_breadth_increase: 2          # +2 subreddits vs prior day
+  SqueezeSetup:
+    enabled: true                    # auto-inactive unless short-interest data is present
+    min_short_pct_float: 10.0        # % of float sold short
+    require_spike: true
+    top_n: 10
+
+# --- ML models --------------------------------------------------------------
+ml:
+  target: "fwd_ret_5d"               # regression target / sign for classification
+  classification_target_threshold: 0.0
+  walk_forward:
+    train_days: 252
+    test_days: 21
+    step_days: 21
+    min_train_rows: 200
+  models: ["logreg", "random_forest"]   # + "lightgbm" if installed
+  random_state: 1887
+
+# --- Research loop ----------------------------------------------------------
+research_loop:
+  max_iterations: 5
+  alpha_acceptance:
+    min_sharpe_net: 0.5              # net of costs
+    min_precision_at_10: 0.50
+    require_positive_in_n_periods: 2 # out-of-sample period count

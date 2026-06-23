@@ -1,0 +1,47 @@
+# ---------------------------------------------------------------------------
+# Subreddits scanned for stock hype. Add your own freely.
+#
+# Each entry:
+#   name:    subreddit name (without the r/)
+#   region:  US | AU | GLOBAL  (used for default ticker-universe scoping)
+#   weight:  trust/quality multiplier applied to attention from this sub
+#            (lower for meme-heavy subs, higher for DD-heavy subs)
+#   tier:    large | mid | niche  (used by the cross-subreddit-breakout signal)
+# ---------------------------------------------------------------------------
+
+subreddits:
+  # --- United States ---
+  - { name: wallstreetbets,   region: US, weight: 0.8, tier: large }
+  - { name: stocks,           region: US, weight: 1.0, tier: large }
+  - { name: investing,        region: US, weight: 1.1, tier: large }
+  - { name: StockMarket,      region: US, weight: 0.9, tier: large }
+  - { name: ValueInvesting,   region: US, weight: 1.2, tier: mid }
+  - { name: options,          region: US, weight: 0.9, tier: mid }
+  - { name: pennystocks,      region: US, weight: 0.6, tier: mid }
+  - { name: smallstreetbets,  region: US, weight: 0.7, tier: mid }
+  - { name: Shortsqueeze,     region: US, weight: 0.5, tier: niche }
+  - { name: Superstonk,       region: US, weight: 0.4, tier: niche }
+  - { name: CryptoCurrency,   region: US, weight: 0.6, tier: large }
+  - { name: BitcoinMining,    region: US, weight: 0.8, tier: niche }
+
+  # --- Australia ---
+  - { name: ASX_Bets,         region: AU, weight: 0.7, tier: mid }
+  - { name: AusFinance,       region: AU, weight: 1.0, tier: large }
+  - { name: ausstocks,        region: AU, weight: 1.0, tier: mid }
+  - { name: fiaustralia,      region: AU, weight: 1.0, tier: niche }
+
+# Subreddits whose DD flair tends to carry real substance (boosts quality score).
+dd_flairs:
+  - "DD"
+  - "Due Diligence"
+  - "Discussion"
+  - "Fundamentals"
+  - "Catalyst"
+
+# Low-effort flairs that should be discounted.
+low_effort_flairs:
+  - "Meme"
+  - "Shitpost"
+  - "Gain"
+  - "Loss"
+  - "YOLO"

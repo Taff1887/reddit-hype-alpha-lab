@@ -1,0 +1,188 @@
+# ---------------------------------------------------------------------------
+# Ticker-extraction filters. The single most important correctness component:
+# bad extraction silently poisons every downstream feature and backtest.
+#
+# The extractor produces a confidence score and only keeps mentions above a
+# threshold (see min_confidence). Ambiguous English-word tickers require extra
+# evidence (cashtag, company name nearby, finance context).
+# ---------------------------------------------------------------------------
+
+# Hard blocklist: never treat these as tickers no matter the evidence, because
+# they are overwhelmingly used as ordinary words / acronyms on these subs.
+# (Many ARE real tickers — BE=Bloom Energy, AI=C3.ai — but the false-positive
+#  rate is so high that we only accept them in cashtag form; see require_cashtag.)
+blocklist:
+  - DD
+  - CEO
+  - CFO
+  - CTO
+  - IMO
+  - IMHO
+  - YOLO
+  - FOMO
+  - USA
+  - GDP
+  - CPI
+  - FED
+  - SEC
+  - IRS
+  - ETF
+  - IPO
+  - EPS
+  - ATH
+  - ATL
+  - EOD
+  - EOW
+  - PM
+  - AM
+  - EU
+  - UK
+  - US
+  - WSB
+  - FUD
+  - HODL
+  - LOL
+  - LMAO
+  - TLDR
+  - TLDR
+  - EDIT
+  - NSFW
+  - RIP
+  - GG
+  - OK
+  - OP
+  - PSA
+  - FYI
+  - TBH
+  - AFAIK
+
+# Ambiguous: real tickers that are also common English words. Accepted ONLY with
+# strong evidence — a cashtag ($BE) or a company-name match nearby. A bare "BE"
+# in prose is rejected.
+require_cashtag:
+  - A     # Agilent
+  - BE    # Bloom Energy
+  - AI    # C3.ai
+  - "ON"  # ON Semiconductor (quoted: YAML 1.1 reads bare ON as boolean true)
+  - IT    # Gartner
+  - ARE   # Alexandria Real Estate
+  - CAN   # Canaan
+  - ALL   # Allstate
+  - FOR   # Forian
+  - SO    # Southern Co
+  - GO    # Grocery Outlet
+  - NOW   # ServiceNow
+  - SEE   # Sealed Air
+  - REAL  # The RealReal
+  - OPEN  # Opendoor
+  - LOVE  # Lovesac
+  - PLAY  # Dave & Buster's
+  - FAST  # Fastenal
+  - CARS  # Cars.com
+  - WELL  # Welltower
+  - HE    # Hawaiian Electric
+  - PLUG  # Plug Power (also a common word)
+  - BIG   # Big Lots
+  - HOOD  # Robinhood (also slang)
+  - GME   # accept bare (iconic) — kept here as documentation only; see note
+
+# Minimum confidence (0-1) for a mention to be kept.
+min_confidence: 0.55
+
+# Confidence scoring weights (see ticker_extractor._score). Tuned so that:
+#   * a cashtag ($NVDA) essentially always clears the threshold,
+#   * a bare valid ticker WITH finance context clears (0.40 + 0.20 = 0.60),
+#   * a bare valid ticker WITHOUT context does not (0.40 - 0.20 = 0.20),
+#   * an ambiguous / common-word token never clears without a cashtag.
+confidence_weights:
+  cashtag_bonus: 0.50
+  company_name_nearby_bonus: 0.35
+  valid_exchange_bonus: 0.40
+  finance_context_bonus: 0.20
+  multi_user_bonus: 0.10             # applied at aggregation, not per-mention
+  common_word_penalty: 0.50          # subtracted if token is a common English word
+  low_context_penalty: 0.20          # subtracted if no finance context at all
+  ambiguous_no_cashtag_penalty: 0.60 # subtracted for require_cashtag list w/o cashtag
+
+# Tokens that look like tickers (1-5 uppercase letters) but are common English
+# words. Used to apply common_word_penalty. This is a pragmatic seed list; in
+# production back it with a real English dictionary (see text_cleaning.ENGLISH_WORDS).
+common_english_words:
+  - BE
+  - AI
+  - "ON"      # quoted: bare ON is YAML boolean true
+  - IT
+  - ARE
+  - CAN
+  - FOR
+  - ALL
+  - SO
+  - GO
+  - NOW
+  - SEE
+  - REAL
+  - OPEN
+  - LOVE
+  - PLAY
+  - FAST
+  - WELL
+  - BIG
+  - ANY
+  - OUT
+  - NEW
+  - LOW
+  - HIGH
+  - BUY
+  - SELL
+  - HOLD
+  - PUMP
+  - MOON
+  - BULL
+  - BEAR
+  - RED
+  - HOT
+  - WIN
+  - LOSS
+  - GAIN
+  - CASH
+  - RICH
+  - SAFE
+  - GOOD
+  - BAD
+  - "YES"     # quoted: bare YES is YAML boolean true
+  - "NO"      # quoted: bare NO is YAML boolean false
+
+# Finance-context cue words. Presence near a candidate boosts confidence.
+finance_context_terms:
+  - calls
+  - puts
+  - shares
+  - stock
+  - ticker
+  - position
+  - earnings
+  - revenue
+  - guidance
+  - squeeze
+  - short
+  - long
+  - dividend
+  - market cap
+  - float
+  - bought
+  - sold
+  - holding
+  - dd
+  - price target
+  - PT
+  - resistance
+  - support
+  - breakout
+  - catalyst
+  - shorts
+  - options
+  - strike
+  - expiry
+
+# Cashtag regex notes: matched in ticker_extractor; ASX cashtags may be $XYZ.AX.
+asx_suffix: ".AX"
